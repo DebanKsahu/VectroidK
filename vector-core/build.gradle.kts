@@ -27,7 +27,6 @@ kotlin {
     }
     iosArm64()
     iosSimulatorArm64()
-    linuxX64()
 
     sourceSets {
         commonMain.dependencies {
