@@ -1,0 +1,168 @@
+package com.github.debanksahu.vectroidk.index.quantization
+
+import com.github.debanksahu.vectroidk.index.quantization.blockwise.Blockwise
+import com.github.debanksahu.vectroidk.index.quantization.blockwise.BlockwiseConfiguration
+import com.github.debanksahu.vectroidk.utils.enums.NormalizationMethods
+import kotlin.test.Test
+import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+
+class BlockwiseTest {
+    @Test
+    fun quantize_creates_expected_number_of_blocks() {
+        val config = BlockwiseConfiguration(blockSize = 2, normalizationMethod = null)
+        val blockwise = Blockwise(config)
+
+        val output = blockwise.quantize(floatArrayOf(1f, 2f, 3f, 4f, 5f))
+
+        assertEquals(3, output.scaleVector.size)
+    }
+
+    @Test
+    fun quantize_when_block_size_is_larger_than_input_creates_single_block() {
+        val config = BlockwiseConfiguration(blockSize = 10, normalizationMethod = null)
+        val blockwise = Blockwise(config)
+
+        val output = blockwise.quantize(floatArrayOf(1f, 2f, 3f))
+
+        assertContentEquals(
+            byteArrayOf(42, 85, 127),
+            output.quantizedOutput
+        )
+        assertEquals(1, output.scaleVector.size)
+        assertEquals(3f / 127f, output.scaleVector[0], 0.0001f)
+    }
+
+    @Test
+    fun quantize_empty_input_returns_empty_output() {
+        val config = BlockwiseConfiguration(blockSize = 2, normalizationMethod = null)
+        val blockwise = Blockwise(config)
+
+        val output = blockwise.quantize(floatArrayOf())
+
+        assertContentEquals(byteArrayOf(), output.quantizedOutput)
+        assertContentEquals(floatArrayOf(), output.scaleVector)
+        assertEquals(0, output.originalSize)
+        assertEquals(2, output.blockSize)
+    }
+
+    @Test
+    fun quantize_without_normalization() {
+        val config = BlockwiseConfiguration(blockSize = 2, normalizationMethod = null)
+        val blockwise = Blockwise(config)
+        val input = floatArrayOf(1f, 2f, 3f, 4f)
+        val output = blockwise.quantize(input)
+
+        assertContentEquals(byteArrayOf(64, 127, 95, 127), output.quantizedOutput)
+        assertEquals(2f / 127f, output.scaleVector[0], 0.0001f)
+        assertEquals(4f / 127f, output.scaleVector[1], 0.0001f)
+        assertEquals(4, output.originalSize)
+        assertEquals(2, output.blockSize)
+    }
+
+    @Test
+    fun quantize_with_zero_vector() {
+        val config = BlockwiseConfiguration(blockSize = 2, normalizationMethod = null)
+        val blockwise = Blockwise(config)
+        val input = floatArrayOf(0f, 0f, 0f, 0f)
+        val output = blockwise.quantize(input)
+
+        assertContentEquals(byteArrayOf(0, 0, 0, 0), output.quantizedOutput)
+        assertEquals(1f, output.scaleVector[0], 0.0001f)
+        assertEquals(1f, output.scaleVector[1], 0.0001f)
+    }
+
+    @Test
+    fun quantize_with_l2_normalization() {
+        val config = BlockwiseConfiguration(
+            blockSize = 2,
+            normalizationMethod = NormalizationMethods.L2_NORMALIZATION
+        )
+        val blockwise = Blockwise(config)
+        val input = floatArrayOf(3f, 4f)
+        val output = blockwise.quantize(input)
+
+        assertContentEquals(byteArrayOf(95, 127), output.quantizedOutput)
+        assertEquals((4f / 5f) / 127f, output.scaleVector[0], 0.0001f)
+    }
+
+    @Test
+    fun quantize_negative_values() {
+        val config = BlockwiseConfiguration(blockSize = 2, normalizationMethod = null)
+        val blockwise = Blockwise(config)
+        val input = floatArrayOf(-1f, -2f)
+        val output = blockwise.quantize(input)
+
+        assertContentEquals(byteArrayOf(-63, -127), output.quantizedOutput)
+        assertEquals(2f / 127f, output.scaleVector[0], 0.0001f)
+    }
+
+    @Test
+    fun quantize_partial_block() {
+        val config = BlockwiseConfiguration(blockSize = 2, normalizationMethod = null)
+        val blockwise = Blockwise(config)
+        val input = floatArrayOf(1f, 2f, 3f, 4f, 5f)
+        val output = blockwise.quantize(input)
+
+        assertContentEquals(byteArrayOf(64, 127, 95, 127, 127), output.quantizedOutput)
+        assertEquals(2f / 127f, output.scaleVector[0], 0.0001f)
+        assertEquals(4f / 127f, output.scaleVector[1], 0.0001f)
+        assertEquals(5f / 127f, output.scaleVector[2], 0.0001f)
+    }
+
+    @Test
+    fun calculate_similarityscore_identical_vectors() {
+        val config = BlockwiseConfiguration(blockSize = 2, normalizationMethod = NormalizationMethods.L2_NORMALIZATION)
+        val blockwise = Blockwise(config)
+        val input = floatArrayOf(1f, 1f)
+        val output1 = blockwise.quantize(input)
+        val output2 = blockwise.quantize(input)
+        val score = blockwise.calculateSimilarityScore(output1, output2)
+        assertEquals(1.0f, score, 0.0001f)
+    }
+
+    @Test
+    fun calculate_similarityscore_orthogonal_vectors() {
+        val config = BlockwiseConfiguration(blockSize = 2, normalizationMethod = NormalizationMethods.L2_NORMALIZATION)
+        val blockwise = Blockwise(config)
+        val output1 = blockwise.quantize(floatArrayOf(1f, 0f))
+        val output2 = blockwise.quantize(floatArrayOf(0f, 1f))
+        val score = blockwise.calculateSimilarityScore(output1, output2)
+        assertEquals(0.0f, score, 0.0001f)
+    }
+
+    @Test
+    fun calculate_similarityscore_mismatched_originalsize_vectors() {
+        val config = BlockwiseConfiguration(blockSize = 2, normalizationMethod = NormalizationMethods.L2_NORMALIZATION)
+        val blockwise = Blockwise(config)
+        val output1 = blockwise.quantize(floatArrayOf(1f, 2f))
+        val output2 = blockwise.quantize(floatArrayOf(1f, 2f, 3f))
+        assertFailsWith<IllegalArgumentException> {
+            blockwise.calculateSimilarityScore(output1, output2)
+        }
+    }
+
+    @Test
+    fun calculate_similarityscore_mismatched_blocksize_vectors() {
+        val config1 = BlockwiseConfiguration(blockSize = 2, normalizationMethod = NormalizationMethods.L2_NORMALIZATION)
+        val config2 = BlockwiseConfiguration(blockSize = 3, normalizationMethod = NormalizationMethods.L2_NORMALIZATION)
+        val blockwise1 = Blockwise(config1)
+        val blockwise2 = Blockwise(config2)
+        val output1 = blockwise1.quantize(floatArrayOf(1f, 2f, 3f))
+        val output2 = blockwise2.quantize(floatArrayOf(1f, 2f, 3f))
+        assertFailsWith<IllegalArgumentException> {
+            blockwise1.calculateSimilarityScore(output1, output2)
+        }
+    }
+
+    @Test
+    fun calculate_similarityscore_zero_vectors() {
+        val config = BlockwiseConfiguration(blockSize = 2, normalizationMethod = NormalizationMethods.L2_NORMALIZATION)
+        val blockwise = Blockwise(config)
+        val output1 = blockwise.quantize(floatArrayOf(0f, 0f))
+        val output2 = blockwise.quantize(floatArrayOf(0f, 0f))
+        val score = blockwise.calculateSimilarityScore(output1, output2)
+        assertEquals(0.0f, score, 0.0001f)
+    }
+}
