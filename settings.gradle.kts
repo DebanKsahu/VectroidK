@@ -14,4 +14,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "VectroidK"
-include(":library")
+include(":vector-core")
