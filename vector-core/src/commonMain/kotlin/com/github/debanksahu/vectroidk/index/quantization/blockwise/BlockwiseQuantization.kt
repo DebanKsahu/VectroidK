@@ -11,7 +11,7 @@ import kotlin.math.sqrt
 /**
  *
  */
-class Blockwise(
+class BlockwiseQuantization(
     override val config: BlockwiseConfiguration
 ) : Quantization<BlockwiseConfiguration, BlockwiseOutput> {
 
