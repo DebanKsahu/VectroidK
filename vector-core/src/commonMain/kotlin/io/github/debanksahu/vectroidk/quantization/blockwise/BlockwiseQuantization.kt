@@ -1,19 +1,15 @@
-package com.github.debanksahu.vectroidk.index.quantization.blockwise
+package io.github.debanksahu.vectroidk.quantization.blockwise
 
-import com.github.debanksahu.vectroidk.index.quantization.Quantization
-import com.github.debanksahu.vectroidk.utils.enums.NormalizationMethods
-import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.roundToInt
-import kotlin.math.sqrt
+import io.github.debanksahu.vectroidk.quantization.Quantization
+import io.github.debanksahu.vectroidk.utils.enums.NormalizationMethod
+import kotlin.math.*
 
 /**
  *
  */
 class BlockwiseQuantization(
-    override val config: BlockwiseConfiguration
-) : Quantization<BlockwiseConfiguration, BlockwiseOutput> {
+    override val config: BlockwiseQuantizationConfiguration
+) : Quantization<BlockwiseQuantizationConfiguration, BlockwiseOutput> {
 
     /**
      * # About #
@@ -67,7 +63,7 @@ class BlockwiseQuantization(
                 }
             }
 
-            NormalizationMethods.L2_NORMALIZATION -> {
+            NormalizationMethod.L2_NORMALIZATION -> {
                 var squareSum = 0.0
                 for (inputNum in inputVector) {
                     squareSum += inputNum.toDouble() * inputNum.toDouble()
@@ -111,10 +107,10 @@ class BlockwiseQuantization(
         input2: BlockwiseOutput
     ): Float {
         // Pre requirements for the function
-        require(input1.originalSize==input2.originalSize) {
+        require(input1.originalSize == input2.originalSize) {
             "The input vectors original size does match"
         }
-        require(input1.blockSize==input2.blockSize) {
+        require(input1.blockSize == input2.blockSize) {
             "The input vectors block size does match"
         }
 
@@ -122,7 +118,7 @@ class BlockwiseQuantization(
         for (i in input1.scaleVector.indices) {
             val scaleMul = input1.scaleVector[i] * input2.scaleVector[i]
             val start = i * input1.blockSize
-            val end = min(((i + 1) * input1.blockSize) - 1, input1.originalSize-1)
+            val end = min(((i + 1) * input1.blockSize) - 1, input1.originalSize - 1)
 
             var currSum = 0
             for (j in start..end) {

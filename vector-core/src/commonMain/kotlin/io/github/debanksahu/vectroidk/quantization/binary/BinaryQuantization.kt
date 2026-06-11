@@ -1,11 +1,11 @@
-package com.github.debanksahu.vectroidk.index.quantization.binary
+package io.github.debanksahu.vectroidk.quantization.binary
 
-import com.github.debanksahu.vectroidk.index.quantization.Quantization
+import io.github.debanksahu.vectroidk.quantization.Quantization
 import kotlin.math.min
 
 class BinaryQuantization(
-    override val config: BinaryConfiguration
-) : Quantization<BinaryConfiguration, BinaryOutput> {
+    override val config: BinaryQuantizationConfiguration
+) : Quantization<BinaryQuantizationConfiguration, BinaryOutput> {
 
     init {
         require(config.blockSize>0) { "blockSize must be 0 or greater" }
@@ -59,7 +59,12 @@ class BinaryQuantization(
     }
 
     /**
-     *
+     * # About #
+     * This function calculate threshold for binary quantization
+     * based on which type of variation the user using
+     * @param inputVector The input embedding vector.
+     * @return This return a [FloatArray] because threshold calculation happen blockwise
+     * mean each block will get separate threshold.
      */
     private fun calculateThreshold(inputVector: FloatArray): FloatArray {
         val numBlocks = (inputVector.size + config.blockSize - 1) / config.blockSize

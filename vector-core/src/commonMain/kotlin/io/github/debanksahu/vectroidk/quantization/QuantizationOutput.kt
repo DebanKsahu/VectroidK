@@ -1,0 +1,3 @@
+package io.github.debanksahu.vectroidk.quantization
+
+interface QuantizationOutput

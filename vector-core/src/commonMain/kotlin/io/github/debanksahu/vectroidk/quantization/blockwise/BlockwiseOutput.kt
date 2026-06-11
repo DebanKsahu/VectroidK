@@ -1,13 +1,13 @@
-package com.github.debanksahu.vectroidk.index.quantization.blockwise
+package io.github.debanksahu.vectroidk.quantization.blockwise
 
-import com.github.debanksahu.vectroidk.index.quantization.QuantizationOutput
+import io.github.debanksahu.vectroidk.quantization.QuantizationOutput
 
 data class BlockwiseOutput(
     val quantizedOutput: ByteArray,
     val scaleVector: FloatArray,
     val originalSize: Int,
     val blockSize: Int
-): QuantizationOutput {
+) : QuantizationOutput {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false

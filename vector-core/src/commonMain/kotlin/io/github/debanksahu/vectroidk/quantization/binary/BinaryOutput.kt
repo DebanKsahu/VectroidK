@@ -1,6 +1,6 @@
-package com.github.debanksahu.vectroidk.index.quantization.binary
+package io.github.debanksahu.vectroidk.quantization.binary
 
-import com.github.debanksahu.vectroidk.index.quantization.QuantizationOutput
+import io.github.debanksahu.vectroidk.quantization.QuantizationOutput
 
 data class BinaryOutput(
     val quantizedOutput: LongArray,
@@ -14,9 +14,7 @@ data class BinaryOutput(
 
         other as BinaryOutput
 
-        if (!quantizedOutput.contentEquals(other.quantizedOutput)) return false
-
-        return true
+        return quantizedOutput.contentEquals(other.quantizedOutput)
     }
 
     override fun hashCode(): Int {
