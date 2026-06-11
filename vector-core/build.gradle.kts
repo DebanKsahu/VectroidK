@@ -6,12 +6,12 @@ plugins {
     alias(libs.plugins.vanniktech.mavenPublish)
 }
 
-group = "com.github.DebanKsahu"
+group = "io.github.debanksahu"
 version = "0.1.0"
 
 kotlin {
     androidLibrary {
-        namespace = "com.github.debanksahu.vectroidk"
+        namespace = "io.github.debanksahu.vectroidk"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
@@ -31,6 +31,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             //put your multiplatform dependencies here
+            implementation(libs.room.runtime)
         }
 
         commonTest.dependencies {
@@ -44,11 +45,11 @@ mavenPublishing {
 
     signAllPublications()
 
-    coordinates(group.toString(), "vectroidk", version.toString())
+    coordinates(group.toString(), "vector-core", version.toString())
 
     pom {
-        name = "VectroidK"
-        description = "A On Device Memory Engine"
+        name = "vector-core"
+        description = "The vector storage engine"
         inceptionYear = "2026"
         url = "https://github.com/DebanKsahu/VectroidK"
         licenses {
