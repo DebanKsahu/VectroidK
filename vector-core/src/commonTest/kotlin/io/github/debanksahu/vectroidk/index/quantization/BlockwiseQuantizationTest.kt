@@ -1,7 +1,7 @@
 package io.github.debanksahu.vectroidk.index.quantization
 
-import com.github.debanksahu.vectroidk.index.quantization.blockwise.BlockwiseConfiguration
-import com.github.debanksahu.vectroidk.index.quantization.blockwise.BlockwiseQuantization
+import io.github.debanksahu.vectroidk.quantization.blockwise.BlockwiseQuantization
+import io.github.debanksahu.vectroidk.quantization.blockwise.BlockwiseQuantizationConfiguration
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -10,7 +10,7 @@ import kotlin.test.assertFailsWith
 class BlockwiseQuantizationTest {
     @Test
     fun quantize_creates_expected_number_of_blocks() {
-        val config = BlockwiseConfiguration(blockSize = 2, normalizationMethod = null)
+        val config = BlockwiseQuantizationConfiguration(blockSize = 2, normalizationMethod = null)
         val blockwiseQuantization = BlockwiseQuantization(config)
 
         val output = blockwiseQuantization.quantize(floatArrayOf(1f, 2f, 3f, 4f, 5f))
@@ -20,7 +20,7 @@ class BlockwiseQuantizationTest {
 
     @Test
     fun quantize_when_block_size_is_larger_than_input_creates_single_block() {
-        val config = BlockwiseConfiguration(blockSize = 10, normalizationMethod = null)
+        val config = BlockwiseQuantizationConfiguration(blockSize = 10, normalizationMethod = null)
         val blockwiseQuantization = BlockwiseQuantization(config)
 
         val output = blockwiseQuantization.quantize(floatArrayOf(1f, 2f, 3f))
@@ -35,7 +35,7 @@ class BlockwiseQuantizationTest {
 
     @Test
     fun quantize_empty_input_returns_empty_output() {
-        val config = BlockwiseConfiguration(blockSize = 2, normalizationMethod = null)
+        val config = BlockwiseQuantizationConfiguration(blockSize = 2, normalizationMethod = null)
         val blockwiseQuantization = BlockwiseQuantization(config)
 
         val output = blockwiseQuantization.quantize(floatArrayOf())
@@ -48,7 +48,7 @@ class BlockwiseQuantizationTest {
 
     @Test
     fun quantize_without_normalization() {
-        val config = BlockwiseConfiguration(blockSize = 2, normalizationMethod = null)
+        val config = BlockwiseQuantizationConfiguration(blockSize = 2, normalizationMethod = null)
         val blockwiseQuantization = BlockwiseQuantization(config)
         val input = floatArrayOf(1f, 2f, 3f, 4f)
         val output = blockwiseQuantization.quantize(input)
@@ -62,7 +62,7 @@ class BlockwiseQuantizationTest {
 
     @Test
     fun quantize_with_zero_vector() {
-        val config = BlockwiseConfiguration(blockSize = 2, normalizationMethod = null)
+        val config = BlockwiseQuantizationConfiguration(blockSize = 2, normalizationMethod = null)
         val blockwiseQuantization = BlockwiseQuantization(config)
         val input = floatArrayOf(0f, 0f, 0f, 0f)
         val output = blockwiseQuantization.quantize(input)
@@ -74,9 +74,9 @@ class BlockwiseQuantizationTest {
 
     @Test
     fun quantize_with_l2_normalization() {
-        val config = BlockwiseConfiguration(
+        val config = BlockwiseQuantizationConfiguration(
             blockSize = 2,
-            normalizationMethod = _root_ide_package_.io.github.debanksahu.vectroidk.utils.enums.NormalizationMethod.L2_NORMALIZATION
+            normalizationMethod = io.github.debanksahu.vectroidk.utils.enums.NormalizationMethod.L2_NORMALIZATION
         )
         val blockwiseQuantization = BlockwiseQuantization(config)
         val input = floatArrayOf(3f, 4f)
@@ -88,7 +88,7 @@ class BlockwiseQuantizationTest {
 
     @Test
     fun quantize_negative_values() {
-        val config = BlockwiseConfiguration(blockSize = 2, normalizationMethod = null)
+        val config = BlockwiseQuantizationConfiguration(blockSize = 2, normalizationMethod = null)
         val blockwiseQuantization = BlockwiseQuantization(config)
         val input = floatArrayOf(-1f, -2f)
         val output = blockwiseQuantization.quantize(input)
@@ -99,7 +99,7 @@ class BlockwiseQuantizationTest {
 
     @Test
     fun quantize_partial_block() {
-        val config = BlockwiseConfiguration(blockSize = 2, normalizationMethod = null)
+        val config = BlockwiseQuantizationConfiguration(blockSize = 2, normalizationMethod = null)
         val blockwiseQuantization = BlockwiseQuantization(config)
         val input = floatArrayOf(1f, 2f, 3f, 4f, 5f)
         val output = blockwiseQuantization.quantize(input)
@@ -112,9 +112,9 @@ class BlockwiseQuantizationTest {
 
     @Test
     fun calculate_similarityscore_identical_vectors() {
-        val config = BlockwiseConfiguration(
+        val config = BlockwiseQuantizationConfiguration(
             blockSize = 2,
-            normalizationMethod = _root_ide_package_.io.github.debanksahu.vectroidk.utils.enums.NormalizationMethod.L2_NORMALIZATION
+            normalizationMethod = io.github.debanksahu.vectroidk.utils.enums.NormalizationMethod.L2_NORMALIZATION
         )
         val blockwiseQuantization = BlockwiseQuantization(config)
         val input = floatArrayOf(1f, 1f)
@@ -126,9 +126,9 @@ class BlockwiseQuantizationTest {
 
     @Test
     fun calculate_similarityscore_orthogonal_vectors() {
-        val config = BlockwiseConfiguration(
+        val config = BlockwiseQuantizationConfiguration(
             blockSize = 2,
-            normalizationMethod = _root_ide_package_.io.github.debanksahu.vectroidk.utils.enums.NormalizationMethod.L2_NORMALIZATION
+            normalizationMethod = io.github.debanksahu.vectroidk.utils.enums.NormalizationMethod.L2_NORMALIZATION
         )
         val blockwiseQuantization = BlockwiseQuantization(config)
         val output1 = blockwiseQuantization.quantize(floatArrayOf(1f, 0f))
@@ -139,9 +139,9 @@ class BlockwiseQuantizationTest {
 
     @Test
     fun calculate_similarityscore_mismatched_originalsize_vectors() {
-        val config = BlockwiseConfiguration(
+        val config = BlockwiseQuantizationConfiguration(
             blockSize = 2,
-            normalizationMethod = _root_ide_package_.io.github.debanksahu.vectroidk.utils.enums.NormalizationMethod.L2_NORMALIZATION
+            normalizationMethod = io.github.debanksahu.vectroidk.utils.enums.NormalizationMethod.L2_NORMALIZATION
         )
         val blockwiseQuantization = BlockwiseQuantization(config)
         val output1 = blockwiseQuantization.quantize(floatArrayOf(1f, 2f))
@@ -153,13 +153,13 @@ class BlockwiseQuantizationTest {
 
     @Test
     fun calculate_similarityscore_mismatched_blocksize_vectors() {
-        val config1 = BlockwiseConfiguration(
+        val config1 = BlockwiseQuantizationConfiguration(
             blockSize = 2,
-            normalizationMethod = _root_ide_package_.io.github.debanksahu.vectroidk.utils.enums.NormalizationMethod.L2_NORMALIZATION
+            normalizationMethod = io.github.debanksahu.vectroidk.utils.enums.NormalizationMethod.L2_NORMALIZATION
         )
-        val config2 = BlockwiseConfiguration(
+        val config2 = BlockwiseQuantizationConfiguration(
             blockSize = 3,
-            normalizationMethod = _root_ide_package_.io.github.debanksahu.vectroidk.utils.enums.NormalizationMethod.L2_NORMALIZATION
+            normalizationMethod = io.github.debanksahu.vectroidk.utils.enums.NormalizationMethod.L2_NORMALIZATION
         )
         val blockwiseQuantization1 = BlockwiseQuantization(config1)
         val blockwiseQuantization2 = BlockwiseQuantization(config2)
@@ -172,9 +172,9 @@ class BlockwiseQuantizationTest {
 
     @Test
     fun calculate_similarityscore_zero_vectors() {
-        val config = BlockwiseConfiguration(
+        val config = BlockwiseQuantizationConfiguration(
             blockSize = 2,
-            normalizationMethod = _root_ide_package_.io.github.debanksahu.vectroidk.utils.enums.NormalizationMethod.L2_NORMALIZATION
+            normalizationMethod = io.github.debanksahu.vectroidk.utils.enums.NormalizationMethod.L2_NORMALIZATION
         )
         val blockwiseQuantization = BlockwiseQuantization(config)
         val output1 = blockwiseQuantization.quantize(floatArrayOf(0f, 0f))
