@@ -5,11 +5,17 @@ import io.github.debanksahu.vectroidk.utils.enums.NormalizationMethod
 import kotlin.math.*
 
 /**
- *
+ * # About #
+ * - This class provide utils for **Blockwise Quantization** algorithm.
  */
 class BlockwiseQuantization(
     override val config: BlockwiseQuantizationConfiguration
 ) : Quantization<BlockwiseQuantizationConfiguration, BlockwiseOutput> {
+
+    init {
+        require(config.blockSize > 0) { "blockSize must be 0 or greater" }
+        require(config.inputSize > 0) { "input size must be 0 or greater" }
+    }
 
     /**
      * # About #
@@ -20,15 +26,16 @@ class BlockwiseQuantization(
      * **dequantization** etc.
      */
     override fun quantize(inputVector: FloatArray): BlockwiseOutput {
-        val inputSize = inputVector.size
-        val numberOfBlocks = (inputSize + config.blockSize - 1) / config.blockSize
-        val outputVector = ByteArray(inputSize, init = { 0 })
+        require(inputVector.size == config.inputSize) { "input vectors size must be equal to ${config.inputSize}" }
+
+        val numberOfBlocks = (config.inputSize + config.blockSize - 1) / config.blockSize
+        val outputVector = ByteArray(config.inputSize, init = { 0 })
         val scaleVector = FloatArray(size = numberOfBlocks, init = { 0f })
         applyQuantization(inputVector = inputVector, outputVector = outputVector, scaleVector = scaleVector)
         return BlockwiseOutput(
             quantizedOutput = outputVector,
             scaleVector = scaleVector,
-            originalSize = inputSize,
+            originalSize = config.inputSize,
             blockSize = config.blockSize
         )
     }
@@ -42,15 +49,14 @@ class BlockwiseQuantization(
      * @param scaleVector The placeholder for our block level scale
      */
     private fun applyQuantization(inputVector: FloatArray, outputVector: ByteArray, scaleVector: FloatArray) {
-        val inputSize = inputVector.size
         var start = 0
         var currMaxAbs = 0.0f
         var currScale: Float
         when (config.normalizationMethod) {
             null -> {
-                for (end in 0..<inputSize) {
+                for (end in 0..<config.inputSize) {
                     currMaxAbs = max(currMaxAbs, abs(inputVector[end]))
-                    if (end - start + 1 == config.blockSize || end == inputSize - 1) {
+                    if (end - start + 1 == config.blockSize || end == config.inputSize - 1) {
                         currScale = if (currMaxAbs != 0f) currMaxAbs / 127 else 1f
                         scaleVector[start / config.blockSize] = currScale
                         while (start <= end) {
@@ -71,9 +77,9 @@ class BlockwiseQuantization(
                 val norm = sqrt(squareSum).toFloat()
                 if (norm == 0f) return
 
-                for (end in 0..<inputSize) {
+                for (end in 0..<config.inputSize) {
                     currMaxAbs = max(currMaxAbs, abs(inputVector[end]))
-                    if (end - start + 1 == config.blockSize || end == inputSize - 1) {
+                    if (end - start + 1 == config.blockSize || end == config.inputSize - 1) {
                         currScale = if (currMaxAbs != 0f) (currMaxAbs / norm) / 127 else 1f
                         scaleVector[start / config.blockSize] = currScale
                         while (start <= end) {
@@ -106,12 +112,14 @@ class BlockwiseQuantization(
         input1: BlockwiseOutput,
         input2: BlockwiseOutput
     ): Float {
-        // Pre requirements for the function
-        require(input1.originalSize == input2.originalSize) {
-            "The input vectors original size does match"
+        require(input1.originalSize == config.inputSize) {
+            "The input(1) vectors original size does not match with ${config.inputSize}"
+        }
+        require(input2.originalSize == config.inputSize) {
+            "The input(2) vectors original size does not match with ${config.inputSize}"
         }
         require(input1.blockSize == input2.blockSize) {
-            "The input vectors block size does match"
+            "The input vectors block size does not match"
         }
 
         var similarityScore = 0.0f
@@ -129,5 +137,31 @@ class BlockwiseQuantization(
         }
 
         return similarityScore
+    }
+
+    /**
+     * # About #
+     * This function convert the stored embedding (in form of [ByteArray]) to [BlockwiseOutput]
+     * which is used as input type in other functions like **calculateSimilarityScore**.
+     * @param inputVector The stored embedding
+     * @param kwargs Additional keyword arguments. Supported keys includes:
+     * - `"scaleVector"` ([FloatArray]): A FloatArray which contain scale for each block.
+     * @return Return a [BlockwiseOutput] object.
+     */
+    override fun convertToQuantizedOutput(
+        inputVector: ByteArray,
+        kwargs: Map<String, Any>
+    ): BlockwiseOutput {
+        require("scaleVector" in kwargs) { "scaleVector is not provided" }
+        val scaleVector = kwargs["scaleVector"]
+
+        require(scaleVector is FloatArray) { "scaleVector should be a FloatArray" }
+
+        return BlockwiseOutput(
+            quantizedOutput = inputVector,
+            scaleVector = scaleVector,
+            originalSize = config.inputSize,
+            blockSize = config.blockSize
+        )
     }
 }
