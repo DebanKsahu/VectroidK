@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.vanniktech.mavenPublish)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 group = "io.github.debanksahu"
@@ -32,6 +33,10 @@ kotlin {
         commonMain.dependencies {
             //put your multiplatform dependencies here
             implementation(libs.room.runtime)
+
+            implementation(libs.fastCollect)
+
+            implementation(libs.kotlin.serialization.cbor)
         }
 
         commonTest.dependencies {

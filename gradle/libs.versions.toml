@@ -5,10 +5,27 @@ android-minSdk = "24"
 android-compileSdk = "36"
 vanniktechMavenPublish = "0.36.0"
 
+room = "3.0.0-alpha06"
+
+fast_collect = "1.0.1"
+
+kotlin_serialization = "1.11.0"
+
 [libraries]
+# Testing Libraries
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+
+# Storage (Room) Libraries
+room-runtime = { module = "androidx.room3:room3-runtime", version.ref = "room" }
+
+# Collection Libraries
+fastCollect = { module = "io.github.sooniln:fastcollect-kotlin", version.ref = "fast_collect" }
+
+# Serialization Libraries
+kotlin-serialization-cbor = { module = "org.jetbrains.kotlinx:kotlinx-serialization-cbor", version.ref = "kotlin_serialization" }
 
 [plugins]
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
