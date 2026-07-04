@@ -1,6 +1,8 @@
 package io.github.debanksahu.vectroidk.quantization.binary
 
 import io.github.debanksahu.vectroidk.quantization.Quantization
+import io.github.debanksahu.vectroidk.storage.QuantizationUtils
+import io.github.debanksahu.vectroidk.utils.extension.toByteArray
 import io.github.debanksahu.vectroidk.utils.extension.toLongArray
 import kotlin.math.min
 
@@ -41,7 +43,7 @@ class BinaryQuantization(
         }
 
         return BinaryOutput(
-            quantizedOutput = outputVector,
+            quantizedOutput = outputVector.toByteArray(),
             originalSize = inputVector.size,
             blockSize = config.blockSize,
             variation = config.variation
@@ -88,13 +90,16 @@ class BinaryQuantization(
      * @return Return a [BinaryOutput] object.
      */
     override fun convertToQuantizedOutput(inputVector: ByteArray, kwargs: Map<String, Any>): BinaryOutput {
-        val outputVector = inputVector.toLongArray()
         return BinaryOutput(
-            quantizedOutput = outputVector,
+            quantizedOutput = inputVector,
             originalSize = config.inputSize,
             blockSize = config.blockSize,
             variation = config.variation
         )
+    }
+
+    override fun extractQuantizationUtils(input: BinaryOutput): QuantizationUtils.None {
+        return QuantizationUtils.None
     }
 
     /**
@@ -136,8 +141,10 @@ class BinaryQuantization(
      */
     private fun calculateHammingDistance(input1: BinaryOutput, input2: BinaryOutput): Int {
         var distance = 0
-        for (i in input1.quantizedOutput.indices) {
-            distance += (input1.quantizedOutput[i] xor input2.quantizedOutput[i]).countOneBits()
+        val quantizedOutput1 = input1.quantizedOutput.toLongArray()
+        val quantizedOutput2 = input2.quantizedOutput.toLongArray()
+        for (i in quantizedOutput1.indices) {
+            distance += (quantizedOutput1[i] xor quantizedOutput2[i]).countOneBits()
         }
         return distance
     }

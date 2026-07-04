@@ -1,7 +1,9 @@
 package io.github.debanksahu.vectroidk.quantization.blockwise
 
 import io.github.debanksahu.vectroidk.quantization.Quantization
+import io.github.debanksahu.vectroidk.storage.QuantizationUtils
 import io.github.debanksahu.vectroidk.utils.enums.NormalizationMethod
+import io.github.debanksahu.vectroidk.utils.extension.toByteArray
 import kotlin.math.*
 
 /**
@@ -162,6 +164,12 @@ class BlockwiseQuantization(
             scaleVector = scaleVector,
             originalSize = config.inputSize,
             blockSize = config.blockSize
+        )
+    }
+
+    override fun extractQuantizationUtils(input: BlockwiseOutput): QuantizationUtils {
+        return QuantizationUtils.BlockwiseQuantizationUtils(
+            scaleVector = input.scaleVector.toByteArray()
         )
     }
 }
