@@ -3,7 +3,7 @@ package io.github.debanksahu.vectroidk.quantization.binary
 import io.github.debanksahu.vectroidk.quantization.QuantizationOutput
 
 data class BinaryOutput(
-    val quantizedOutput: LongArray,
+    override val quantizedOutput: ByteArray,
     val originalSize: Int,
     val blockSize: Int,
     val variation: BinaryVariation
